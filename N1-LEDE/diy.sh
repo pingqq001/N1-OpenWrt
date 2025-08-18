@@ -8,7 +8,10 @@ function git_sparse_clone() {
   mv -f $@ ../package
   cd .. && rm -rf $repodir
 }
-
+# ======== 修改内核下载地址 ========
+echo "修改内核下载地址为清华镜像..."
+sed -i 's|https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git|https://mirror.tuna.tsinghua.edu.cn/git/linux-stable.git|g' include/kernel-defaults.mk
+sed -i 's|KERNEL_PATCHVER:=.*|KERNEL_PATCHVER:=5.15|g' target/linux/armvirt/Makefile
 # Add packages
 #添加科学上网源
 git clone --depth=1 https://github.com/xiaorouji/openwrt-passwall-packages package/openwrt-passwall-packages
