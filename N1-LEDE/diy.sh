@@ -8,6 +8,18 @@ function git_sparse_clone() {
   mv -f $@ ../package
   cd .. && rm -rf $repodir
 }
+
+mkdir -p scripts
+cat > scripts/download.pl << 'EOF'
+#!/usr/bin/perl
+my $url = shift;
+# 替换内核下载地址
+$url =~ s|https://git\.kernel\.org/pub/scm/linux/kernel/git/stable/linux\.git|https://mirror.tuna.tsinghua.edu.cn/git/linux-stable.git|;
+exec("wget", "-O", @ARGV) if $url =~ /linux\.git/;
+exec("wget", "--passive-ftp", "-O", @ARGV);
+EOF
+chmod +x scripts/download.pl
+
 # ======== 修改内核下载地址 ========
 echo "修改内核下载地址为清华镜像..."
 sed -i 's|https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git|https://mirror.tuna.tsinghua.edu.cn/git/linux-stable.git|g' include/kernel-defaults.mk
@@ -44,3 +56,21 @@ sed -i 's/192.168.1.1/192.168.2.2/g' package/base-files/files/bin/config_generat
 
 #修改默认时间格式
 sed -i 's/os.date()/os.date("%Y-%m-%d %H:%M:%S %A")/g' $(find ./package/*/autocore/files/ -type f -name "index.htm")
+# ======== 将内核修改命令移到脚本末尾 ========
+echo "修改内核下载地址为清华镜像..."
+# 等待源码初始化完成
+sleep 5
+# 检查文件是否存在，如果存在则修改
+if [ -f include/kernel-defaults.mk ]; then
+    sed -i 's|https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git|https://mirror.tuna.tsinghua.edu.cn/git/linux-stable.git|g' include/kernel-defaults.mk
+    echo "已修改 include/kernel-defaults.mk"
+else
+    echo "警告: include/kernel-defaults.mk 文件不存在"
+fi
+
+if [ -f target/linux/armvirt/Makefile ]; then
+    sed -i 's|KERNEL_PATCHVER:=.*|KERNEL_PATCHVER:=5.15|g' target/linux/armvirt/Makefile
+    echo "已修改 target/linux/armvirt/Makefile"
+else
+    echo "警告: target/linux/armvirt/Makefile 文件不存在"
+fi
