@@ -33,6 +33,25 @@ jobs:
         echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
         echo "硬盘详情："
         df -Th
+
+
+- name: Update & Install feeds
+  working-directory: ./openwrt
+  run: |
+    ./scripts/feeds update -a
+    ./scripts/feeds install -a
+
+
+- name: Modify kernel download URL
+  working-directory: ./openwrt
+  run: |
+    echo "修改内核下载地址为清华镜像..."
+    sed -i 's|https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git|https://mirror.tuna.tsinghua.edu.cn/git/linux-stable.git|g' include/kernel-defaults.mk
+    sed -i 's|KERNEL_PATCHVER:=.*|KERNEL_PATCHVER:=5.15|g' target/linux/armvirt/Makefile
+    echo "内核下载地址修改完成"
+
+
+
         
     - name: Before freeing up disk space
       run: |
