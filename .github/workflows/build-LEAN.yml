@@ -34,25 +34,12 @@ jobs:
         echo "硬盘详情："
         df -Th
 
-
 - name: Update & Install feeds
   working-directory: ./openwrt
   run: |
     ./scripts/feeds update -a 
     ./scripts/feeds install -a
 
-
-
-
-
-
-        
-    - name: Before freeing up disk space
-      run: |
-        echo "Before freeing up disk space"
-        echo "=============================================================================="
-        df -hT
-        echo "=============================================================================="
 
     - name: "Optimize Disk Space"
       uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
